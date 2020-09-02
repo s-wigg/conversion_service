@@ -10,6 +10,8 @@ from pdf_converter.converter.pdf_converter import PDFConverter
 from django.utils.decorators import method_decorator
 from django.views import View
 from pymongo import MongoClient
+from pdf_converter.models import ConverterResponse
+import json
 
 import gridfs
 
@@ -24,12 +26,27 @@ class ConvertController(View):
     def dispatch(self, request, *args, **kwargs):
         return super(ConvertController, self).dispatch(request, *args, **kwargs)
 
+    # def post(self, request, *args, **kwargs):
+    #     pdf_data = request.FILES["pdf"].read()
+    #     task = ConvertTask(pdf_data)
+    #     image_file_urls = self.converter.do_convert(task)
+    #     # return the names of what will (hopefully) be in the db before customer accesses URL
+    #     return JsonResponse({"images": image_file_urls})
+
     def post(self, request, *args, **kwargs):
-        pdf_data = request.FILES["pdf"].read()
-        task = ConvertTask(pdf_data)
-        image_file_urls = self.converter.do_convert(task)
-        # return the names of what will (hopefully) be in the db before customer accesses URL
-        return JsonResponse({"images": image_file_urls})
+        files = request.FILES.getlist("pdf")
+
+        responses = []
+        for file in files:
+            file_name = str(file)
+            pdf_data = file.read()
+            task = ConvertTask(pdf_data)
+            image_file_urls = self.converter.do_convert(task)
+            response = ConverterResponse(task.id, file_name, image_file_urls)
+            # return the names of what will (hopefully) be in the db before customer accesses URL
+            responses.append(response.__dict__)
+
+        return JsonResponse({"data": responses})
 
 # Respond to GET requests for images by accessing MongoDB using GridFS
 class ImageController(View):
