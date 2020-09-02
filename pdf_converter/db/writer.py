@@ -17,9 +17,9 @@ class MongoDBWriter():
             file_data = data[x]
             res = self.image_fs.put(file_data, _id=filename)
             #res = self.image_collection.insert_one({"_id": filename, "data": file_data})
-            print("id is " + filename)
+            print("wrote image id:" + filename)
 
     def write_pdf(self, filename, data):
         res = self.pdf_fs.put(data, _id=filename)
         #res = self.pdf_collection.insert_one({"_id": filename, "data": data})
-        print("id is " + filename)
+        print("wrote pdf id:" + filename)

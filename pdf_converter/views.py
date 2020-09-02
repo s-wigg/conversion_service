@@ -12,7 +12,7 @@ from django.views import View
 from pymongo import MongoClient
 from pdf_converter.models import ConverterResponse
 import json
-
+from django.core.exceptions import SuspiciousOperation
 import gridfs
 
 # Run local conversion of PDF file and insert output PNG into DB.
@@ -26,15 +26,10 @@ class ConvertController(View):
     def dispatch(self, request, *args, **kwargs):
         return super(ConvertController, self).dispatch(request, *args, **kwargs)
 
-    # def post(self, request, *args, **kwargs):
-    #     pdf_data = request.FILES["pdf"].read()
-    #     task = ConvertTask(pdf_data)
-    #     image_file_urls = self.converter.do_convert(task)
-    #     # return the names of what will (hopefully) be in the db before customer accesses URL
-    #     return JsonResponse({"images": image_file_urls})
-
     def post(self, request, *args, **kwargs):
         files = request.FILES.getlist("pdf")
+        if len(files) == 0:
+            raise Exception("Must use \'pdf\' as key for each file, or no files to convert were provided")
 
         responses = []
         for file in files:
