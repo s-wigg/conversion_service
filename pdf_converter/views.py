@@ -34,6 +34,10 @@ class ConvertController(View):
         responses = []
         for file in files:
             file_name = str(file)
+            last_three_char = file_name[(len(file_name) - 3): (len(file_name))]
+            if last_three_char.lower() != "pdf":
+                print(f"File {file_name} does not appear to be a PDF -- skipping")
+                continue
             pdf_data = file.read()
             task = ConvertTask(pdf_data)
             image_file_urls = self.converter.do_convert(task)
